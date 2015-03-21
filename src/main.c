@@ -35,6 +35,19 @@ void subBytes(Block a) {
   }
 }
 
+void shiftRows(Block a) {
+  uint8_t i, j, n;
+  for(i = 0; i < BLOCKLENGTH; ++i) {          // iteracao pelas linhas
+    for(n = i; n > 0; --n) {                  // numero de shifts por linha
+      uint8_t aux = a[BPOS(i, 0)];
+      for(j = 0; j < BLOCKLENGTH - 1; ++j) {
+        a[BPOS(i, j)] = a[BPOS(i, j + 1)];
+      }
+      a[BPOS(i, 3)] = aux;
+    }
+  }
+}
+
 int main(int argc, char *argv[]) {
 
   Block a;
@@ -43,6 +56,9 @@ int main(int argc, char *argv[]) {
   printBlock(a);
   subBytes(a);
   puts("block b");
+  printBlock(a);
+  shiftRows(a);
+  puts("block c");
   printBlock(a);
 
   return 0;
