@@ -1,15 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <stdint.h>
 
+#include "block.h"
+
 #define SBOXSIZE    256
-#define BLOCKLENGTH 4
-#define BLOCKSIZE   16
-
-#define BPOS(i, j) (i * BLOCKLENGTH + j)
-
-typedef uint8_t Block[BLOCKSIZE];
 
 const uint8_t sbox[SBOXSIZE] =
 {
@@ -30,25 +25,6 @@ const uint8_t sbox[SBOXSIZE] =
    0xE1, 0xF8, 0x98, 0x11, 0x69, 0xD9, 0x8E, 0x94, 0x9B, 0x1E, 0x87, 0xE9, 0xCE, 0x55, 0x28, 0xDF,
    0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
 };
-
-void printBlock(Block block) {
-  uint8_t i, j;
-  for(i = 0; i < BLOCKLENGTH; ++i) {
-    for(j = 0; j < BLOCKLENGTH; ++j) {
-      printf("0x%02X\t", block[BPOS(i, j)]);
-    }
-    putchar('\n');
-  }
-}
-
-void initBlock(Block block) {
-  uint8_t i, j;
-  for(i = 0; i < BLOCKLENGTH; ++i) {
-    for(j = 0; j < BLOCKLENGTH; ++j) {
-      block[BPOS(i, j)] = (uint8_t) (rand() % 256);
-    }
-  }
-}
 
 void subBytes(Block a) {
   uint8_t i, j;
