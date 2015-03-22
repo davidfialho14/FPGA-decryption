@@ -107,6 +107,21 @@ void keySchedule(Block key) {
   }
 }
 
+void mixColumns(Block a) {
+  uint8_t aux[BLOCKLENGTH];
+  uint8_t i, j;
+  for(j = 0; j < BLOCKLENGTH; ++j) {
+    aux[0] = 2*a[BPOS(0, j)] + 3*a[BPOS(1, j)] + a[BPOS(2, j)] + a[BPOS(3, j)];
+    aux[1] = a[BPOS(0, j)] + 2*a[BPOS(1, j)] + 3*a[BPOS(2, j)] + a[BPOS(3, j)];
+    aux[2] = a[BPOS(0, j)] + a[BPOS(1, j)] + 2*a[BPOS(2, j)] + 3*a[BPOS(3, j)];
+    aux[3] = 3*a[BPOS(0, j)] + a[BPOS(1, j)] + a[BPOS(2, j)] + 2*a[BPOS(3, j)];
+
+    for(i = 0; i < BLOCKLENGTH; ++i) {
+      a[BPOS(i, j)] = aux[i];
+    }
+  }
+}
+
 int main(int argc, char *argv[]) {
 
   Block a;
@@ -118,6 +133,9 @@ int main(int argc, char *argv[]) {
   printBlock(a);
   shiftRows(a);
   puts("block c");
+  printBlock(a);
+  mixColumns(a);
+  puts("block d");
   printBlock(a);
 
   Block key;
