@@ -9,6 +9,7 @@
 typedef uint8_t Block[BLOCKSIZE];
 
 void printBlock(Block block);
-void initBlock(Block block);
+void initKey(Block key);
+void initState(Block state);
 
 #endif

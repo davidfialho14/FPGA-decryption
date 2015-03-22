@@ -70,43 +70,6 @@ void shiftRows(Block a) {
   }
 }
 
-void keySchedule(Block key) {
-  uint8_t i, n;
-  uint8_t col[BLOCKLENGTH]; // coluna auxiliar
-
-  for(n = 0; n < 10; ++n) { // fazer 10 rondas
-    // rodar coluna
-    for(i = 0; i < BLOCKLENGTH - 1; ++i) {
-      col[i] = key[BPOS(i + 1, 3)];
-    }
-    col[3] = key[BPOS(0, 3)];
-
-    // aplicar subbyte a cada byte da coluna
-    for(i = 0; i < BLOCKLENGTH; ++i) {
-      col[i] = sbox[col[i]];
-    }
-
-    // fazer XOR entre a ultima coluna e a primeira
-    for(i = 0; i < BLOCKLENGTH; ++i) {
-      col[i] = key[BPOS(i, 0)] ^ col[i];
-    }
-
-    // fazer xor entre o resultado anterior e a coluna de rcon e guardar resultado na primeira coluna
-    key[BPOS(0, 0)] = col[0] ^ rcon[n+1];
-    for(i = 1; i < BLOCKLENGTH; ++i) {
-      key[BPOS(i, 0)] = col[i] ^ 0x00;
-    }
-
-    // fazer round das proximas 3 colunas
-    uint8_t j;
-    for(j = 1; j < BLOCKLENGTH; ++j) {
-      for(i = 0; i < BLOCKLENGTH; ++i) {
-        key[BPOS(i, j)] ^= key[BPOS(i, j - 1)];
-      }
-    }
-  }
-}
-
 void mixColumns(Block a) {
   uint8_t aux[BLOCKLENGTH];
   uint8_t i, j;
@@ -122,29 +85,84 @@ void mixColumns(Block a) {
   }
 }
 
+void roundKey(Block key, uint8_t round) {
+  uint8_t i;
+  uint8_t col[BLOCKLENGTH]; // coluna auxiliar
+
+  // rodar coluna
+  for(i = 0; i < BLOCKLENGTH - 1; ++i) {
+    col[i] = key[BPOS(i + 1, 3)];
+  }
+  col[3] = key[BPOS(0, 3)];
+
+  // aplicar subbyte a cada byte da coluna
+  for(i = 0; i < BLOCKLENGTH; ++i) {
+    col[i] = sbox[col[i]];
+  }
+
+  // fazer XOR entre a ultima coluna e a primeira
+  for(i = 0; i < BLOCKLENGTH; ++i) {
+    col[i] = key[BPOS(i, 0)] ^ col[i];
+  }
+
+  // fazer xor entre o resultado anterior e a coluna de rcon e guardar resultado na primeira coluna
+  key[BPOS(0, 0)] = col[0] ^ rcon[round];
+  for(i = 1; i < BLOCKLENGTH; ++i) {
+    key[BPOS(i, 0)] = col[i] ^ 0x00;
+  }
+
+  // fazer round das proximas 3 colunas
+  uint8_t j;
+  for(j = 1; j < BLOCKLENGTH; ++j) {
+    for(i = 0; i < BLOCKLENGTH; ++i) {
+      key[BPOS(i, j)] ^= key[BPOS(i, j - 1)];
+    }
+  }
+}
+
+void addRoundKey(Block a, Block key) {
+  uint8_t i, j;
+  for(i = 0; i < BLOCKLENGTH; ++i) {
+    for(j = 0; j < BLOCKLENGTH; ++j) {
+      a[BPOS(i, j)] ^= key[(BPOS(i, j))];
+    }
+  }
+}
+
+void encrypt(Block a, Block key) {
+
+  // fazer 10 rondas
+  uint8_t n;
+  for(n = 1; n < 10; ++n) {
+    subBytes(a);
+    shiftRows(a);
+    mixColumns(a);
+    roundKey(key, n);
+    addRoundKey(a, key);
+  }
+
+  // ultima ronda
+  subBytes(a);
+  shiftRows(a);
+  roundKey(key, n);
+  addRoundKey(a, key);
+}
+
 int main(int argc, char *argv[]) {
 
   Block a;
-  initBlock(a);
+  initState(a);
   puts("block a");
-  printBlock(a);
-  subBytes(a);
-  puts("block b");
-  printBlock(a);
-  shiftRows(a);
-  puts("block c");
-  printBlock(a);
-  mixColumns(a);
-  puts("block d");
   printBlock(a);
 
   Block key;
-  initBlock(key);
+  initKey(a);
   puts("block key");
   printBlock(key);
-  keySchedule(key);
-  puts("block round key");
-  printBlock(key);
+
+  encrypt(a, key);
+  puts("block encrypted");
+  printBlock(a);
 
   return 0;
 }
