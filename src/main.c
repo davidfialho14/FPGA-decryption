@@ -72,16 +72,22 @@ void shiftRows(Block a) {
 
 void mixColumns(Block a) {
   uint8_t aux[BLOCKLENGTH];
+  uint8_t doublea[BLOCKLENGTH];  // a multplicado por 2
   uint8_t i, j;
-  for(j = 0; j < BLOCKLENGTH; ++j) {
-    aux[0] = 2*a[BPOS(0, j)] + 3*a[BPOS(1, j)] + a[BPOS(2, j)] + a[BPOS(3, j)];
-    aux[1] = a[BPOS(0, j)] + 2*a[BPOS(1, j)] + 3*a[BPOS(2, j)] + a[BPOS(3, j)];
-    aux[2] = a[BPOS(0, j)] + a[BPOS(1, j)] + 2*a[BPOS(2, j)] + 3*a[BPOS(3, j)];
-    aux[3] = 3*a[BPOS(0, j)] + a[BPOS(1, j)] + a[BPOS(2, j)] + 2*a[BPOS(3, j)];
+  uint8_t h;
 
+  for(j = 0; j < BLOCKLENGTH; ++j) {
     for(i = 0; i < BLOCKLENGTH; ++i) {
-      a[BPOS(i, j)] = aux[i];
+      aux[i] = a[BPOS(i, j)];
+      h = (uint8_t)((int8_t)a[BPOS(i, j)] >> 7);
+      doublea[i] = a[BPOS(i, j)] << 1;
+      doublea[i] ^= 0x1B & h;
     }
+
+    a[BPOS(0, j)] = doublea[0] ^ aux[3] ^ aux[2] ^ doublea[1] ^ aux[1];
+    a[BPOS(1, j)] = doublea[1] ^ aux[0] ^ aux[3] ^ doublea[2] ^ aux[2];
+    a[BPOS(2, j)] = doublea[2] ^ aux[1] ^ aux[0] ^ doublea[3] ^ aux[3];
+    a[BPOS(3, j)] = doublea[3] ^ aux[2] ^ aux[1] ^ doublea[0] ^ aux[0];
   }
 }
 
@@ -133,29 +139,17 @@ void encrypt(Block a, Block key) {
 
   // ronda 0
   addRoundKey(a, key);
-  puts("0: block sum");
-  printBlock(a);
 
   // fazer 10 rondas
   uint8_t n;
   for(n = 1; n < 10; ++n) {
     roundKey(key, n);
-    printf("%d: block key\n", n);
-    printBlock(key);
 
     subBytes(a);
-    printf("%d: block a subbytes\n", n);
-    printBlock(a);
     shiftRows(a);
-    printf("%d: block a shift\n", n);
-    printBlock(a);
     mixColumns(a);
-    printf("%d: block a mix\n", n);
-    printBlock(a);
 
     addRoundKey(a, key);
-    printf("%d: block sum\n", n);
-    printBlock(a);
   }
 
   // ultima ronda
