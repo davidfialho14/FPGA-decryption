@@ -4,6 +4,7 @@
 
 #include "block.h"
 #include "encryption.h"
+#include "decryption.h"
 
 int main(int argc, char *argv[]) {
 
@@ -19,6 +20,10 @@ int main(int argc, char *argv[]) {
 
   encrypt(a, key);
   puts("block encrypted");
+  printBlock(a);
+
+  invShiftRows(a);
+  puts("block invShiftRows");
   printBlock(a);
 
   return 0;
