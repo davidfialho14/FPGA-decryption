@@ -75,7 +75,7 @@ void keySchedule(Block key) {
   uint8_t col[BLOCKLENGTH]; // coluna auxiliar
   // rodar coluna
   for(i = 0; i < BLOCKLENGTH - 1; ++i) {
-    col[i] = key[BPOS(i - 1, 3)];
+    col[i] = key[BPOS(i + 1, 3)];
   }
   col[3] = key[BPOS(0, 3)];
 
@@ -90,7 +90,7 @@ void keySchedule(Block key) {
   }
 
   // fazer xor entre o resultado anterior e a coluna de rcon e guardar resultado na primeira coluna
-  key[BPOS(i, 0)] = col[i] ^ rcon[1];
+  key[BPOS(0, 0)] = col[0] ^ rcon[1];
   for(i = 1; i < BLOCKLENGTH; ++i) {
     key[BPOS(i, 0)] = col[i] ^ 0x00;
   }
@@ -112,6 +112,7 @@ int main(int argc, char *argv[]) {
   Block key;
   initBlock(key);
   puts("block key");
+  printBlock(key);
   keySchedule(key);
   puts("block round key");
   printBlock(key);
