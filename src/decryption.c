@@ -36,3 +36,12 @@ void invShiftRows(Block a) {
     }
   }
 }
+
+void invSubBytes(Block a) {
+  uint8_t i, j;
+  for(i = 0; i < BLOCKLENGTH; ++i) {
+    for(j = 0; j < BLOCKLENGTH; ++j) {
+      a[BPOS(i, j)] = invSbox[a[BPOS(i, j)]];
+    }
+  }
+}
