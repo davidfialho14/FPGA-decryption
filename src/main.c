@@ -94,6 +94,14 @@ void keySchedule(Block key) {
   for(i = 1; i < BLOCKLENGTH; ++i) {
     key[BPOS(i, 0)] = col[i] ^ 0x00;
   }
+
+  // fazer round das proximas 3 colunas
+  uint8_t j;
+  for(j = 1; j < BLOCKLENGTH; ++j) {
+    for(i = 0; i < BLOCKLENGTH; ++i) {
+      key[BPOS(i, j)] ^= key[BPOS(i, j - 1)];
+    }
+  }
 }
 
 int main(int argc, char *argv[]) {
