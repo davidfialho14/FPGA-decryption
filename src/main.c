@@ -131,14 +131,31 @@ void addRoundKey(Block a, Block key) {
 
 void encrypt(Block a, Block key) {
 
+  // ronda 0
+  addRoundKey(a, key);
+  puts("0: block sum");
+  printBlock(a);
+
   // fazer 10 rondas
   uint8_t n;
   for(n = 1; n < 10; ++n) {
-    subBytes(a);
-    shiftRows(a);
-    mixColumns(a);
     roundKey(key, n);
+    printf("%d: block key\n", n);
+    printBlock(key);
+
+    subBytes(a);
+    printf("%d: block a subbytes\n", n);
+    printBlock(a);
+    shiftRows(a);
+    printf("%d: block a shift\n", n);
+    printBlock(a);
+    mixColumns(a);
+    printf("%d: block a mix\n", n);
+    printBlock(a);
+
     addRoundKey(a, key);
+    printf("%d: block sum\n", n);
+    printBlock(a);
   }
 
   // ultima ronda
@@ -152,12 +169,12 @@ int main(int argc, char *argv[]) {
 
   Block a;
   initState(a);
-  puts("block a");
+  puts("block a init");
   printBlock(a);
 
   Block key;
-  initKey(a);
-  puts("block key");
+  initKey(key);
+  puts("block key init");
   printBlock(key);
 
   encrypt(a, key);
