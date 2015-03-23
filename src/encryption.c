@@ -1,10 +1,9 @@
 #include <stdint.h>
 #include "block.h"
 #include "rcon.h"
+#include "encryption.h"
 
 extern const uint8_t rcon[RCONSIZE];
-
-#define SBOXSIZE    256
 
 const uint8_t sbox[SBOXSIZE] =
 {
@@ -104,7 +103,7 @@ void roundKey(Block key, uint8_t round) {
   }
 }
 
-void addRoundKey(Block a, Block key) {
+void addRoundKey(Block a, const Block key) {
   uint8_t i, j;
   for(i = 0; i < BLOCKLENGTH; ++i) {
     for(j = 0; j < BLOCKLENGTH; ++j) {

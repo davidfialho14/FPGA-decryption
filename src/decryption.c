@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdio.h>
 #include "block.h"
 #include "rcon.h"
 #include "encryption.h"
@@ -10,6 +11,7 @@
 #define Multiply(x,y) (((y & 1) * x) ^ ((y>>1 & 1) * xtime(x)) ^ ((y>>2 & 1) * xtime(xtime(x))) ^ ((y>>3 & 1) * xtime(xtime(xtime(x)))) ^ ((y>>4 & 1) * xtime(xtime(xtime(xtime(x))))))
 
 extern const uint8_t rcon[RCONSIZE];
+extern const uint8_t sbox[SBOXSIZE];
 
 const uint8_t invSbox[256] =
 {
@@ -68,7 +70,7 @@ void invMixColumns(Block a) {
   }
 }
 
-void invRoundKey(Block key, uint8_t round) {
+void invRoundKey(const Block key, Block roundKey, uint8_t round) {
   uint8_t i;
   uint8_t col[BLOCKLENGTH]; // coluna auxiliar
 
@@ -80,7 +82,7 @@ void invRoundKey(Block key, uint8_t round) {
 
   // aplicar subbyte a cada byte da coluna
   for(i = 0; i < BLOCKLENGTH; ++i) {
-    col[i] = invSbox[col[i]];
+    col[i] = sbox[col[i]];
   }
 
   // fazer XOR entre a ultima coluna e a primeira
@@ -89,39 +91,50 @@ void invRoundKey(Block key, uint8_t round) {
   }
 
   // fazer xor entre o resultado anterior e a coluna de rcon e guardar resultado na primeira coluna
-  key[BPOS(0, 0)] = col[0] ^ rcon[round];
+  roundKey[BPOS(0, 0)] = col[0] ^ rcon[round];
   for(i = 1; i < BLOCKLENGTH; ++i) {
-    key[BPOS(i, 0)] = col[i] ^ 0x00;
+    roundKey[BPOS(i, 0)] = col[i] ^ 0x00;
   }
 
   // fazer round das proximas 3 colunas
   uint8_t j;
   for(j = 1; j < BLOCKLENGTH; ++j) {
     for(i = 0; i < BLOCKLENGTH; ++i) {
-      key[BPOS(i, j)] ^= key[BPOS(i, j - 1)];
+      roundKey[BPOS(i, j)] = key[BPOS(i, j)] ^ roundKey[BPOS(i, j - 1)];
     }
   }
 }
 
-void decrypt(Block a, Block key) {
+void expansionKey(const Block key, Block roundKeys[10]) {
+  uint8_t n;
+
+  // primeira ronda
+  invRoundKey(key, roundKeys[0], 1);
+
+  // restantes rondas
+  for(n = 1; n < 10; ++n) {
+    invRoundKey(roundKeys[n - 1], roundKeys[n], n+1);
+  }
+}
+
+void decrypt(Block a, const Block key) {
+
+  Block roundKeys[10];
+  expansionKey(key, roundKeys);
 
   // ronda 0
-  invRoundKey(key, 10);
-  addRoundKey(a, key);
+  addRoundKey(a, roundKeys[9]);
 
-  // fazer 10 rondas
-  uint8_t n;
-  for(n = 9; n > 0; --n) {
-    invRoundKey(key, n);
-
+  // fazer 9 rondas
+  int8_t n;
+  for(n = 8; n >= 0; --n) {
     invShiftRows(a);
     invSubBytes(a);
-    addRoundKey(a, key);
+    addRoundKey(a, roundKeys[n]);
     invMixColumns(a);
   }
 
   // ultima ronda
-  invRoundKey(key, n);
   invShiftRows(a);
   invSubBytes(a);
   addRoundKey(a, key);
