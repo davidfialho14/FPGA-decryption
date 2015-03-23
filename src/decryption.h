@@ -1,6 +1,6 @@
 #ifndef DECRYPTION_H
 #define DECRYPTION_H value
 
-void invShiftRows(Block a);
+void decrypt(Block a, Block key);
 
 #endif

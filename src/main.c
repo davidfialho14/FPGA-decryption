@@ -22,8 +22,11 @@ int main(int argc, char *argv[]) {
   puts("block encrypted");
   printBlock(a);
 
-  invShiftRows(a);
-  puts("block invShiftRows");
+  initKey(key);
+  puts("block key init");
+  printBlock(key);
+  decrypt(a, key);
+  puts("block decrypted");
   printBlock(a);
 
   return 0;

@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include "block.h"
 #include "rcon.h"
+#include "encryption.h"
 
 // xtime is a macro that finds the product of {02} and the argument to xtime modulo {1b}
 #define xtime(x)   ((x<<1) ^ (((x>>7) & 1) * 0x1b))
@@ -52,15 +53,6 @@ void invSubBytes(Block a) {
   }
 }
 
-void addRoundKey(Block a, Block key) {
-  uint8_t i, j;
-  for(i = 0; i < BLOCKLENGTH; ++i) {
-    for(j = 0; j < BLOCKLENGTH; ++j) {
-      a[BPOS(i, j)] ^= key[(BPOS(i, j))];
-    }
-  }
-}
-
 void invMixColumns(Block a) {
   uint8_t aux[BLOCKLENGTH];
   uint8_t i, j;
@@ -74,4 +66,63 @@ void invMixColumns(Block a) {
     a[BPOS(2, j)] = Multiply(aux[0], 0x0d) ^ Multiply(aux[1], 0x09) ^ Multiply(aux[2], 0x0e) ^ Multiply(aux[3], 0x0b);
     a[BPOS(3, j)] = Multiply(aux[0], 0x0b) ^ Multiply(aux[1], 0x0d) ^ Multiply(aux[2], 0x09) ^ Multiply(aux[3], 0x0e);
   }
+}
+
+void invRoundKey(Block key, uint8_t round) {
+  uint8_t i;
+  uint8_t col[BLOCKLENGTH]; // coluna auxiliar
+
+  // rodar coluna
+  for(i = 0; i < BLOCKLENGTH - 1; ++i) {
+    col[i] = key[BPOS(i + 1, 3)];
+  }
+  col[3] = key[BPOS(0, 3)];
+
+  // aplicar subbyte a cada byte da coluna
+  for(i = 0; i < BLOCKLENGTH; ++i) {
+    col[i] = invSbox[col[i]];
+  }
+
+  // fazer XOR entre a ultima coluna e a primeira
+  for(i = 0; i < BLOCKLENGTH; ++i) {
+    col[i] = key[BPOS(i, 0)] ^ col[i];
+  }
+
+  // fazer xor entre o resultado anterior e a coluna de rcon e guardar resultado na primeira coluna
+  key[BPOS(0, 0)] = col[0] ^ rcon[round];
+  for(i = 1; i < BLOCKLENGTH; ++i) {
+    key[BPOS(i, 0)] = col[i] ^ 0x00;
+  }
+
+  // fazer round das proximas 3 colunas
+  uint8_t j;
+  for(j = 1; j < BLOCKLENGTH; ++j) {
+    for(i = 0; i < BLOCKLENGTH; ++i) {
+      key[BPOS(i, j)] ^= key[BPOS(i, j - 1)];
+    }
+  }
+}
+
+void decrypt(Block a, Block key) {
+
+  // ronda 0
+  invRoundKey(key, 10);
+  addRoundKey(a, key);
+
+  // fazer 10 rondas
+  uint8_t n;
+  for(n = 9; n > 0; --n) {
+    invRoundKey(key, n);
+
+    invShiftRows(a);
+    invSubBytes(a);
+    addRoundKey(a, key);
+    invMixColumns(a);
+  }
+
+  // ultima ronda
+  invRoundKey(key, n);
+  invShiftRows(a);
+  invSubBytes(a);
+  addRoundKey(a, key);
 }
