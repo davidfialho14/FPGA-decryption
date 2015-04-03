@@ -5,42 +5,84 @@
 #include <strings.h>
 #include <unistd.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include "block.h"
 #include "encryption.h"
 #include "decryption.h"
 
 int main(int argc, char *argv[]) {
 
-  if(argc != 2) {
-    puts("é preciso uma linha até 16 caracteres para encriptar");
-    exit(-1);
-  }
+	if (argc != 3) {
+		puts("é preciso indicar o ficheiro para encriptar/desencriptar e a opção");
+		exit(-1);
+	}
 
-  Block state;
-  bzero(state, sizeof(state));
-  strncpy((char*) state, argv[1], sizeof(state));
-  puts("block a init");
-  printBlock(state);
+	int toEncrypt = 1;
 
-  char *password = getpass("Enter key: ");
+	if (strcmp(argv[1], "-d") == 0) {
+		//decrypt
+		toEncrypt = 0;
+	} else if (strcmp(argv[1], "-e") == 0) {
+		toEncrypt = 1;
+	} else {
+		puts("opção errada");
+		exit(-1);
+	}
 
-  Block key;
-  bzero(key, sizeof(key));
-  strncpy((char*) key, password, sizeof(key));
-  puts("block key init");
-  printBlock(key);
+	//abrir ficheiro original
+	int fdIn = open(argv[2], O_RDONLY);
+	if (fdIn == -1) {
+		puts("ficheiro não existe");
+		exit(-1);
+	}
 
-  encrypt(state, key);
-  puts("block encrypted");
-  printBlock(state);
+	//definir nome do ficheiro encriptado
+	char outputName[strlen(argv[2]) + 5];
+	strcpy(outputName, argv[2]);
 
-  bzero(key, sizeof(key));
-  strncpy((char*) key, password, sizeof(key));
-  puts("block key init");
-  printBlock(key);
-  decrypt(state, key);
-  puts("block decrypted");
-  printBlock(state);
+	if (toEncrypt)
+		strcat(outputName, ".enc");
+	else
+		strcat(outputName, ".dec");
 
-  return 0;
+	//abrir ficheiro encriptadp
+	int fdOut = open(outputName, O_RDWR | O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO);
+	if (fdOut == -1) {
+		puts("não foi possível criar ficheiro encriptado");
+		exit(-1);
+	}
+
+	// ler chave secreta
+	char *password = getpass("Enter key: ");
+	Block key;
+	bzero(key, sizeof(key));
+	strncpy((char*) key, password, sizeof(key));
+
+	Block state;
+	bzero(state, sizeof(state));
+
+	puts("a encriptar...");
+	while (read(fdIn, state, sizeof(state)) > 0) {
+		if (toEncrypt)
+			encrypt(state, key);
+		else
+			decrypt(state, key);
+
+		if (write(fdOut, state, sizeof(state)) <= 0) {
+			perror("write");
+		}
+
+		bzero(state, sizeof(state));
+		bzero(key, sizeof(key));
+		strncpy((char*) key, password, sizeof(key));
+	}
+	puts("encriptado!");
+
+	close(fdIn);
+	close(fdOut);
+
+	return 0;
 }
