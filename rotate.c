@@ -27,7 +27,12 @@ int main()
   LtoB(block[0]);
   LtoB(block[1]);
   LtoB(block[2]);
-  LtoB(block[3]);  
+  LtoB(block[3]); 
+  
+  printf("%08x\n", byteToInt(&block[0]));
+  printf("%08x\n", byteToInt(&block[1]));
+  printf("%08x\n", byteToInt(&block[2]));
+  printf("%08x\n\n", byteToInt(&block[3])); 
 
   byteToInt(&block[1]) = RotateRow(byteToInt(&block[1]),1);
   byteToInt(&block[2]) = RotateRow(byteToInt(&block[2]),2);
