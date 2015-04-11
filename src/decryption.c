@@ -10,13 +10,6 @@
 // Multiplty is a macro used to multiply numbers in the field GF(2^8)
 #define Multiply(x,y) (((y & 1) * x) ^ ((y>>1 & 1) * xtime(x)) ^ ((y>>2 & 1) * xtime(xtime(x))) ^ ((y>>3 & 1) * xtime(xtime(xtime(x)))) ^ ((y>>4 & 1) * xtime(xtime(xtime(xtime(x))))))
 
-// Rotates by n bytes a given uint_32 l
-#define RotateRowR(l,n)	((l>>(n<<3))|(l<<(32-(n<<3))))
-#define RotateRowL(l,n)	((l<<(n<<3))|(l>>(32-(n<<3))))
-
-// Converts 4 bytes into 1 uint_32
-#define byteToInt(block)	(*((uint32_t*)block))
-
 extern const uint8_t rcon[RCONSIZE];
 extern const uint8_t sbox[SBOXSIZE];
 
@@ -40,59 +33,11 @@ const uint8_t invSbox[256] =
    0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D
 };
 
-/* UNNECESSARY ON BIG ENDIAN CPU's!!! */
-void LtoB(uint8_t * line) // converts a line of 4 bytes from LE to BE
-{
-	uint8_t aux = line[0];
-	line[0] = line[3];
-	line[3] = aux;
-	aux = line[1];
-	line[1] = line[2];
-	line[2] = aux;
-}
-
-void BtoL(uint8_t * line) // converts a line of 4 bytes from LE to BE
-{
-	uint8_t aux = line[0];
-	line[0] = line[3];
-	line[3] = aux;
-	aux = line[1];
-	line[1] = line[2];
-	line[2] = aux;
-}
-
 void invShiftRows(Block a) {
-  printf("\n\n\n\n");
-  printf("Rotated L0:\t%x %x %x %x\n", a[BPOS(0,0)], a[BPOS(0,1)], a[BPOS(0,2)], a[BPOS(0,3)]);
-  printf("Rotated L1:\t%x %x %x %x\n", a[BPOS(1,0)], a[BPOS(1,1)], a[BPOS(1,2)], a[BPOS(1,3)]);
-  printf("Rotated L2:\t%x %x %x %x\n", a[BPOS(2,0)], a[BPOS(2,1)], a[BPOS(2,2)], a[BPOS(2,3)]);
-  printf("Rotated L3:\t%x %x %x %x\n", a[BPOS(3,0)], a[BPOS(3,1)], a[BPOS(3,2)], a[BPOS(3,3)]);
-  printf("\nLittle Endian:\t%08x\n", byteToInt(&a[BPOS(1,0)]));
-/*
-  LtoB(&a[BPOS(1,0)]);
-  LtoB(&a[BPOS(2,0)]);
-  LtoB(&a[BPOS(3,0)]);
-*/
-  printf("Big Endian:\t%08x\n", byteToInt(&a[BPOS(1,0)]));
-
-  byteToInt(&a[BPOS(1,0)]) = RotateRowR(byteToInt(&a[BPOS(1,0)]),1);
-  byteToInt(&a[BPOS(2,0)]) = RotateRowR(byteToInt(&a[BPOS(2,0)]),2);
-  byteToInt(&a[BPOS(3,0)]) = RotateRowR(byteToInt(&a[BPOS(3,0)]),3);
-
-  printf("Rotated (BE):\t%08x\n", byteToInt(&a[BPOS(1,0)]));
-/*
-  BtoL(&a[BPOS(1,0)]);
-  BtoL(&a[BPOS(2,0)]);
-  BtoL(&a[BPOS(3,0)]);
-*/
-  printf("Rotated (LE):\t%08x\n\n", byteToInt(&a[BPOS(1,0)]));
-
-  printf("Rotated L0:\t%x %x %x %x\n", a[BPOS(0,0)], a[BPOS(0,1)], a[BPOS(0,2)], a[BPOS(0,3)]);
-  printf("Rotated L1:\t%x %x %x %x\n", a[BPOS(1,0)], a[BPOS(1,1)], a[BPOS(1,2)], a[BPOS(1,3)]);
-  printf("Rotated L2:\t%x %x %x %x\n", a[BPOS(2,0)], a[BPOS(2,1)], a[BPOS(2,2)], a[BPOS(2,3)]);
-  printf("Rotated L3:\t%x %x %x %x\n", a[BPOS(3,0)], a[BPOS(3,1)], a[BPOS(3,2)], a[BPOS(3,3)]);
-  
-
+/* On Big Endian CPU's, use RotateRowR */
+  byteToInt(&a[BPOS(1,0)]) = RotateRowL(byteToInt(&a[BPOS(1,0)]),8);
+  byteToInt(&a[BPOS(2,0)]) = RotateRowL(byteToInt(&a[BPOS(2,0)]),16);
+  byteToInt(&a[BPOS(3,0)]) = RotateRowL(byteToInt(&a[BPOS(3,0)]),24);
 }
 
 void invSubBytes(Block a) {
