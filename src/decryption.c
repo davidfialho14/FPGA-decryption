@@ -33,13 +33,6 @@ const uint8_t invSbox[256] =
    0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D
 };
 
-void invShiftRows(Block a) {
-/* On Big Endian CPU's, use RotateRowR */
-  byteToInt(&a[BPOS(1,0)]) = RotateRowL(byteToInt(&a[BPOS(1,0)]),8);
-  byteToInt(&a[BPOS(2,0)]) = RotateRowL(byteToInt(&a[BPOS(2,0)]),16);
-  byteToInt(&a[BPOS(3,0)]) = RotateRowL(byteToInt(&a[BPOS(3,0)]),24);
-}
-
 void invSubBytes(Block a) {
   uint8_t i, j;
   for(i = 0; i < BLOCKLENGTH; ++i) {
@@ -47,6 +40,13 @@ void invSubBytes(Block a) {
       a[BPOS(i, j)] = invSbox[a[BPOS(i, j)]];
     }
   }
+}
+
+void invShiftRows(Block a) {
+/* On Big Endian CPU's, use RotateRowR */
+  ROW(a, 1) = ROWROL(ROW(a, 1),8);
+  ROW(a, 2) = ROWROL(ROW(a, 2),16);
+  ROW(a, 3) = ROWROL(ROW(a, 3),24);
 }
 
 void invMixColumns(Block a) {

@@ -36,9 +36,9 @@ void subBytes(Block a) {
 
 void shiftRows(Block a) {
 /* On Big Endian CPU's, use RotateRowL */
-  byteToInt(&a[BPOS(1,0)]) = RotateRowR(byteToInt(&a[BPOS(1,0)]),8);
-  byteToInt(&a[BPOS(2,0)]) = RotateRowR(byteToInt(&a[BPOS(2,0)]),16);
-  byteToInt(&a[BPOS(3,0)]) = RotateRowR(byteToInt(&a[BPOS(3,0)]),24);
+  ROW(a, 1) = ROWROR(ROW(a, 1),8);
+  ROW(a, 2) = ROWROR(ROW(a, 2),16);
+  ROW(a, 3) = ROWROR(ROW(a, 3),24);
 }
 
 void mixColumns(Block a) {
