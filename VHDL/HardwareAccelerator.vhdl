@@ -16,11 +16,11 @@ end HWaccelerator;
 architecture Behavioral of HWaccelerator is
 	constant DelayAmmount : Integer := 4+1; -- cycles + 1
 
-	signal Input_clk, Output_clk					: STD_LOGIC;
-	signal DataOutSelect							: STD_LOGIC_VECTOR(1 downto 0);
-	signal Rx0, Rx1, Rx2, Rx3 						: STD_LOGIC_VECTOR(31 downto 0);
-	signal Ry0, Ry1, Ry2, Ry3 						: STD_LOGIC_VECTOR(31 downto 0);
-	signal OutReg0, OutReg1, OutReg2, OutReg3 		: STD_LOGIC_VECTOR(31 downto 0);
+	signal Input_clk, Output_clk					: STD_LOGIC := '0';
+	signal DataOutSelect							: STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
+	signal Rx0, Rx1, Rx2, Rx3 						: STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+	signal Ry0, Ry1, Ry2, Ry3 						: STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
+	signal OutReg0, OutReg1, OutReg2, OutReg3 		: STD_LOGIC_VECTOR(31 downto 0) := (others => '0');
 
 	-- registos de atraso do contador --
 	type  delayArray is array (0 to DelayAmmount) of std_logic; 
@@ -96,15 +96,17 @@ process(Input_clk)
 
 -- Instantiations --
 	MixAllColumns : MixColumns port map 
-		(   ROWIN3 	=> Rx3,
-			ROWIN2 	=> Rx2,
-			ROWIN1 	=> Rx1,
-			ROWIN0 	=> Rx0,
+	(   
+		ROWIN3 	=> Rx3,
+		ROWIN2 	=> Rx2,
+		ROWIN1 	=> Rx1,
+		ROWIN0 	=> Rx0,
 
-			ROWOUT3	=> Ry3,
-			ROWOUT2	=> Ry2,
-			ROWOUT1	=> Ry1,
-			ROWOUT0	=> Ry0);
+		ROWOUT3	=> Ry3,
+		ROWOUT2	=> Ry2,
+		ROWOUT1	=> Ry1,
+		ROWOUT0	=> Ry0
+	);
 
 
 -- Out Register Row 3 -- Será que pode ser removido? 
