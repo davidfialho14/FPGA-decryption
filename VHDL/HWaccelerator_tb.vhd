@@ -35,7 +35,7 @@ ARCHITECTURE behavior OF HWaccelerator_tb IS
    signal DataOut : std_logic_vector(31 downto 0);
 
    -- Clock period definitions
-   constant clk_period : time := 10 ns;
+   constant clk_period : time := 30 ns;
 
 BEGIN
 
@@ -63,16 +63,19 @@ BEGIN
    stim_proc: process
    begin
       -- hold reset state for 100 ns.
-      wait for clk_period*10;
+      wait for clk_period*6;
       -- insert stimulus here
 
-      Exists <= '1' after 0 ns;
-      DataIn <= X"01020304" after 10 ns;
-      DataIn <= X"01010101" after 20 ns;
-      DataIn <= X"01010101" after 30 ns;
-      DataIn <= X"01010101" after 40 ns;
-      DataIn <= X"02030102" after 40 ns;
-
+      Exists <= '1';
+      DataIn <= X"328831E0";
+		wait for clk_period;
+      DataIn <= X"435A3137";
+		wait for clk_period;
+      DataIn <= X"F6309807";
+		wait for clk_period;
+      DataIn <= X"A88DA234";
+		wait for clk_period;
+      Exists <= '0';
 
       wait;
    end process;

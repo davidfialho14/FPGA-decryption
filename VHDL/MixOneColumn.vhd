@@ -11,11 +11,18 @@ end MixOneColumn;
 
 architecture Behavioral of MixOneColumn is
 	signal x0, x1, x2, x3 		: STD_LOGIC_VECTOR(7 downto 0);
-	signal sh1x0, sh2x0, sh3x0	: STD_LOGIC_VECTOR(7 downto 0);
-	signal sh1x1, sh2x1, sh3x1	: STD_LOGIC_VECTOR(7 downto 0);
-	signal sh1x2, sh2x2, sh3x2	: STD_LOGIC_VECTOR(7 downto 0);
-	signal sh1x3, sh2x3, sh3x3	: STD_LOGIC_VECTOR(7 downto 0);
+	signal mult_09_3				: STD_LOGIC_VECTOR(7 downto 0);
+	signal mult_0B_1,mult_0B_2	: STD_LOGIC_VECTOR(7 downto 0);
+	signal mult_0D_1,mult_0D_2	: STD_LOGIC_VECTOR(7 downto 0);
+	signal mult_0B_1	: STD_LOGIC_VECTOR(7 downto 0);
 	signal y0, y1, y2, y3 		: STD_LOGIC_VECTOR(7 downto 0);
+
+	component FiniteMultiplication is
+    Port ( Input 	: in 		STD_LOGIC_VECTOR (7 downto 0);
+				Multiplicant : in STD_LOGIC_VECTOR(1 downto 0);
+           Output	: out 	STD_LOGIC_VECTOR (7 downto 0)
+         );
+	end component;
 
 begin
 
@@ -24,6 +31,26 @@ begin
 	x1 <= COL_IN(15 downto 8);
 	x2 <= COL_IN(23 downto 16);
 	x3 <= COL_IN(31 downto 24);
+
+	mult_09_3 : FiniteMultiplication port map 
+		(Input 	=> x0,
+		 Power => 3,
+    	 Output => x1);
+
+	mult_09_3 : FiniteMultiplication port map 
+		(Input 	=> x0,
+		 Power => 3,
+    	 Output => x1);
+		 
+	mult_09_3 : FiniteMultiplication port map 
+		(Input 	=> x0,
+		 Power => 3,
+    	 Output => x1);
+		 
+	mult_09_3 : FiniteMultiplication port map 
+		(Input 	=> x0,
+		 Power => 3,
+    	 Output => x1);		 
 
 
 	sh1x0 <= (x0(6 downto 0) & "0");

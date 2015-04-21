@@ -14,7 +14,7 @@ entity HWaccelerator is
 end HWaccelerator;
 
 architecture Behavioral of HWaccelerator is
-	constant DelayAmmount : Integer := 4+1; -- cycles + 1
+	constant DelayAmmount : Integer := 4+3; -- cycles + 3
 
 	signal Input_clk, Output_clk					: STD_LOGIC := '0';
 	signal DataOutSelect							: STD_LOGIC_VECTOR(1 downto 0) := (others => '0');
@@ -35,13 +35,12 @@ architecture Behavioral of HWaccelerator is
 begin
 
 FSL_read <= Exists; -- Reads as soon as it shows up
-Input_clk <= clk and Exists;
 
 -- The output clk is the input clk delayd by DelayAmmount cycles
 process(clk)
 begin
 	if clk'event and clk='1' then
-		counterDelay(0) <= Input_clk;
+		counterDelay(0) <= Exists;
 	end if;
 end process;
 
@@ -55,8 +54,8 @@ begin
 	end process;
 end generate delay;
 
-
-Output_clk <= counterDelay(DelayAmmount-3); -- D(3)
+Input_clk <= clk and Exists;
+Output_clk <= clk and counterDelay(DelayAmmount-3); -- D(3)
 
 -- D(0) or (D(1) and not D(2))
 DataOutSelect(0) <= counterDelay(DelayAmmount-0) or (counterDelay(DelayAmmount-2) and not counterDelay(DelayAmmount-1)); 
@@ -147,5 +146,7 @@ with DataOutSelect select
 				OutReg2 when "10",
 				OutReg3 when "11",
 				X"00000000"	when others;
+				
+FSL_write <= counterDelay(DelayAmmount-3);
 
 end Behavioral;
