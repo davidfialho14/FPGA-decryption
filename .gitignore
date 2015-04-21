@@ -1,2 +1,14 @@
 obj/*
 aes
+/.cproject
+/.project
+/aes_decript
+*.enc
+/test
+/map-of-c3ad-vithsjc3a1la-hc3a1lendii.jpg.dec
+/out
+*.jpg.enc.dec
+*.jpg.dec
+*.jpg
+/Makefile~
+*.out
