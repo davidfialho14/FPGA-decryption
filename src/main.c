@@ -12,6 +12,10 @@
 #include "block.h"
 #include "encryption.h"
 #include "decryption.h"
+#include "file_operations.h"
+
+extern int inputFd;
+extern int outputFd;
 
 int main(int argc, char *argv[]) {
 
@@ -33,8 +37,8 @@ int main(int argc, char *argv[]) {
 	}
 
 	//abrir ficheiro original
-	int fdIn = open(argv[2], O_RDONLY);
-	if (fdIn == -1) {
+	inputFd = open(argv[2], O_RDONLY);
+	if (inputFd == -1) {
 		puts("ficheiro não existe");
 		exit(-1);
 	}
@@ -49,8 +53,8 @@ int main(int argc, char *argv[]) {
 		strcat(outputName, ".dec");
 
 	//abrir ficheiro encriptadp
-	int fdOut = open(outputName, O_RDWR | O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO);
-	if (fdOut == -1) {
+	outputFd = open(outputName, O_RDWR | O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO);
+	if (outputFd == -1) {
 		puts("não foi possível criar ficheiro encriptado");
 		exit(-1);
 	}
@@ -65,13 +69,13 @@ int main(int argc, char *argv[]) {
 	bzero(state, sizeof(state));
 
 	puts("a encriptar...");
-	while (read(fdIn, state, sizeof(state)) > 0) {
+	while (readBlock(0, state)) {
 		if (toEncrypt)
 			encrypt(state, key);
 		else
 			decrypt(state, key);
 
-		if (write(fdOut, state, sizeof(state)) <= 0) {
+		if (!writeBlock(0, state)) {
 			perror("write");
 		}
 
@@ -81,8 +85,8 @@ int main(int argc, char *argv[]) {
 	}
 	puts("encriptado!");
 
-	close(fdIn);
-	close(fdOut);
+	close(inputFd);
+	close(outputFd);
 
 	return 0;
 }
