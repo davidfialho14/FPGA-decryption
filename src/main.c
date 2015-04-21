@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	// ler chave secreta
-	char *password = getpass("Enter key: ");
+	char password[] = "password";
 	Block key;
 	bzero(key, sizeof(key));
 	strncpy((char*) key, password, sizeof(key));

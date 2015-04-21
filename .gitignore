@@ -12,3 +12,4 @@ aes
 *.jpg
 /Makefile~
 *.out
+*.enc.dec
