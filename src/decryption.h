@@ -1,6 +1,7 @@
 #ifndef DECRYPTION_H
-#define DECRYPTION_H value
+#define DECRYPTION_H
 
-void decrypt(Block a, Block key);
+void decrypt(Block a, const Block key);
+void addRoundKey(Block a, const Block key);
 
 #endif

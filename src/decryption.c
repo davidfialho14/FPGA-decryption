@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "block.h"
 #include "tables.h"
-#include "encryption.h"
+#include "decryption.h"
 
 // xtime is a macro that finds the product of {02} and the argument to xtime modulo {1b}
 #define xtime(x)   ((x<<1) ^ (((x>>7) & 1) * 0x1b))
@@ -85,6 +85,15 @@ void expansionKey(const Block key, Block roundKeys[10]) {
   // restantes rondas
   for(n = 1; n < 10; ++n) {
     invRoundKey(roundKeys[n - 1], roundKeys[n], n+1);
+  }
+}
+
+void addRoundKey(Block a, const Block key) {
+  uint8_t i, j;
+  for(i = 0; i < BLOCKLENGTH; ++i) {
+    for(j = 0; j < BLOCKLENGTH; ++j) {
+      a[BPOS(i, j)] ^= key[(BPOS(i, j))];
+    }
   }
 }
 

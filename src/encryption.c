@@ -2,6 +2,7 @@
 #include "block.h"
 #include "tables.h"
 #include "encryption.h"
+#include "decryption.h"
 
 void subBytes(Block a) {
   uint8_t i, j;
@@ -71,15 +72,6 @@ void roundKey(Block key, uint8_t round) {
   for(j = 1; j < BLOCKLENGTH; ++j) {
     for(i = 0; i < BLOCKLENGTH; ++i) {
       key[BPOS(i, j)] ^= key[BPOS(i, j - 1)];
-    }
-  }
-}
-
-void addRoundKey(Block a, const Block key) {
-  uint8_t i, j;
-  for(i = 0; i < BLOCKLENGTH; ++i) {
-    for(j = 0; j < BLOCKLENGTH; ++j) {
-      a[BPOS(i, j)] ^= key[(BPOS(i, j))];
     }
   }
 }
