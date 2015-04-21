@@ -3,21 +3,28 @@
 #include <stdint.h>
 #include <string.h>
 #include <strings.h>
-#include <unistd.h>
 
+#ifndef BOARD
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include "block.h"
 #include "encryption.h"
+#endif
+
+#include "block.h"
 #include "decryption.h"
 #include "file_operations.h"
 
+#ifndef BOARD
 extern int inputFd;
 extern int outputFd;
+#endif
 
 int main(int argc, char *argv[]) {
+
+#ifndef BOARD
 
 	if (argc != 3) {
 		puts("é preciso indicar o ficheiro para encriptar/desencriptar e a opção");
@@ -59,7 +66,9 @@ int main(int argc, char *argv[]) {
 		exit(-1);
 	}
 
-	// ler chave secreta
+#endif
+
+	//chave secreta
 	char password[] = "password";
 	Block key;
 	bzero(key, sizeof(key));
@@ -68,25 +77,37 @@ int main(int argc, char *argv[]) {
 	Block state;
 	bzero(state, sizeof(state));
 
-	puts("a encriptar...");
-	while (readBlock(0, state)) {
+
+	puts("a executar...");
+
+	int i = 0;
+	while (readBlock(i, state)) {
+
+		#ifndef BOARD
 		if (toEncrypt)
 			encrypt(state, key);
 		else
 			decrypt(state, key);
+		#else
+		decrypt(state, key);
+		#endif
 
-		if (!writeBlock(0, state)) {
-			perror("write");
+		if (!writeBlock(i, state)) {
+			puts("não foi possivel escrever no ficheiro");
 		}
 
 		bzero(state, sizeof(state));
 		bzero(key, sizeof(key));
 		strncpy((char*) key, password, sizeof(key));
-	}
-	puts("encriptado!");
 
+		i++;	// próximo bloco de 128 bits
+	}
+	puts("terminado!");
+
+#ifndef BOARD
 	close(inputFd);
 	close(outputFd);
+#endif
 
 	return 0;
 }

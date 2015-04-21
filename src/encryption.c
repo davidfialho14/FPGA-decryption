@@ -1,8 +1,8 @@
 #include <stdint.h>
 #include "block.h"
-#include "tables.h"
 #include "encryption.h"
 #include "decryption.h"
+#include "tables.h"
 
 void subBytes(Block a) {
   uint8_t i, j;

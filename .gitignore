@@ -12,4 +12,11 @@ aes
 *.jpg
 /Makefile~
 *.out
+<<<<<<< HEAD
+=======
+/AES.pro
+/AES.pro.user
+*.pri
+/file_operations.h.autosave
+>>>>>>> dev
 *.enc.dec

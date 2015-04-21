@@ -2,6 +2,8 @@
 #include "file_operations.h"
 #include "block.h"
 
+#ifndef BOARD
+
 int inputFd = -1;
 int outputFd = -1;
 
@@ -12,3 +14,5 @@ int readBlock(int blockPosition, Block block) {
 int writeBlock(int blockPosition, Block block) {
   return (write(outputFd, block, BLOCKSIZE) > 0);
 }
+
+#endif
