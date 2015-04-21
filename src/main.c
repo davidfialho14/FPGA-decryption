@@ -3,17 +3,23 @@
 #include <stdint.h>
 #include <string.h>
 #include <strings.h>
-#include <unistd.h>
 
+#ifndef BOARD
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include "block.h"
 #include "encryption.h"
+#endif
+
+#include "block.h"
 #include "decryption.h"
+#include "file_operations.h"
 
 int main(int argc, char *argv[]) {
+
+#ifndef BOARD
 
 	if (argc != 3) {
 		puts("é preciso indicar o ficheiro para encriptar/desencriptar e a opção");
@@ -33,8 +39,8 @@ int main(int argc, char *argv[]) {
 	}
 
 	//abrir ficheiro original
-	int fdIn = open(argv[2], O_RDONLY);
-	if (fdIn == -1) {
+	inputFd = open(argv[2], O_RDONLY);
+	if (inputFd == -1) {
 		puts("ficheiro não existe");
 		exit(-1);
 	}
@@ -49,14 +55,17 @@ int main(int argc, char *argv[]) {
 		strcat(outputName, ".dec");
 
 	//abrir ficheiro encriptadp
-	int fdOut = open(outputName, O_RDWR | O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO);
-	if (fdOut == -1) {
+	outputFd = open(outputName, O_RDWR | O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO);
+	if (outputFd == -1) {
 		puts("não foi possível criar ficheiro encriptado");
 		exit(-1);
 	}
 
-	// ler chave secreta
-	char *password = getpass("Enter key: ");
+#endif
+
+	//chave secreta
+	char password[] = "password";
+
 	Block key;
 	bzero(key, sizeof(key));
 	strncpy((char*) key, password, sizeof(key));
@@ -64,25 +73,36 @@ int main(int argc, char *argv[]) {
 	Block state;
 	bzero(state, sizeof(state));
 
-	puts("a encriptar...");
-	while (read(fdIn, state, sizeof(state)) > 0) {
+	puts("a executar...");
+
+	int i = 0;
+	while (readBlock(state, i)) {
+
+		#ifndef BOARD
 		if (toEncrypt)
 			encrypt(state, key);
 		else
 			decrypt(state, key);
+		#else
+		decrypt(state, key);
+		#endif
 
-		if (write(fdOut, state, sizeof(state)) <= 0) {
-			perror("write");
+		if (!writeBlock(state, i)) {
+			puts("não foi possivel escrever no ficheiro");
 		}
 
 		bzero(state, sizeof(state));
 		bzero(key, sizeof(key));
 		strncpy((char*) key, password, sizeof(key));
-	}
-	puts("encriptado!");
 
-	close(fdIn);
-	close(fdOut);
+		i++;	// próximo bloco de 128 bits
+	}
+	puts("terminado!");
+
+#ifndef BOARD
+	close(inputFd);
+	close(outputFd);
+#endif
 
 	return 0;
 }

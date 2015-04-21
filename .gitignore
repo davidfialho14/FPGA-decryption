@@ -12,3 +12,8 @@ aes
 *.jpg
 /Makefile~
 *.out
+/AES.pro
+/AES.pro.user
+*.pri
+/file_operations.h.autosave
+*.enc.dec
