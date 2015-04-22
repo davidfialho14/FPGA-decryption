@@ -1,13 +1,16 @@
 #include <stdio.h>
+#include <string.h>
 #include "block.h"
 #include "tables.h"
 #include "decryption.h"
 
-// xtime is a macro that finds the product of {02} and the argument to xtime modulo {1b}
-#define xtime(x)   ((x<<1) ^ (((x>>7) & 1) * 0x1b))
-
-// Multiplty is a macro used to multiply numbers in the field GF(2^8)
-#define Multiply(x,y) (((y & 1) * x) ^ ((y>>1 & 1) * xtime(x)) ^ ((y>>2 & 1) * xtime(xtime(x))) ^ ((y>>3 & 1) * xtime(xtime(xtime(x)))) ^ ((y>>4 & 1) * xtime(xtime(xtime(xtime(x))))))
+#define MULTBY2(x) ((x & 0x80) ? ((x) << 1) ^ 0x1B : ((x) << 1))
+#define MULTBY4(x) (MULTBY2(MULTBY2(x)))
+#define MULTBY8(x) (MULTBY2(MULTBY4(x)))
+#define MULTBYE(x) (MULTBY8(x) ^ MULTBY4(x) ^ MULTBY2(x))
+#define MULTBYB(x) (MULTBY8(x) ^ MULTBY2(x) ^ (x))
+#define MULTBYD(x) (MULTBY8(x) ^ MULTBY4(x) ^ (x))
+#define MULTBY9(x) (MULTBY8(x) ^ (x))
 
 void invSubBytes(Block a) {
   uint8_t i, j;
@@ -26,18 +29,15 @@ void invShiftRows(Block a) {
 }
 
 void invMixColumns(Block a) {
-  uint8_t aux[BLOCKLENGTH];
-  uint8_t i, j;
-  for(j = 0; j < BLOCKLENGTH; ++j) {
-    for(i = 0; i < BLOCKLENGTH; ++i) {
-      aux[i] = a[BPOS(i, j)];
-    }
-
-    a[BPOS(0, j)] = Multiply(aux[0], 0x0e) ^ Multiply(aux[1], 0x0b) ^ Multiply(aux[2], 0x0d) ^ Multiply(aux[3], 0x09);
-    a[BPOS(1, j)] = Multiply(aux[0], 0x09) ^ Multiply(aux[1], 0x0e) ^ Multiply(aux[2], 0x0b) ^ Multiply(aux[3], 0x0d);
-    a[BPOS(2, j)] = Multiply(aux[0], 0x0d) ^ Multiply(aux[1], 0x09) ^ Multiply(aux[2], 0x0e) ^ Multiply(aux[3], 0x0b);
-    a[BPOS(3, j)] = Multiply(aux[0], 0x0b) ^ Multiply(aux[1], 0x0d) ^ Multiply(aux[2], 0x09) ^ Multiply(aux[3], 0x0e);
+  Block aux;
+  for(int j = 0; j < BLOCKLENGTH; ++j) {
+    aux[BPOS(0, j)] = MULTBYE(a[BPOS(0, j)]) ^ MULTBYB(a[BPOS(1, j)]) ^ MULTBYD(a[BPOS(2, j)]) ^ MULTBY9(a[BPOS(3, j)]);
+    aux[BPOS(1, j)] = MULTBY9(a[BPOS(0, j)]) ^ MULTBYE(a[BPOS(1, j)]) ^ MULTBYB(a[BPOS(2, j)]) ^ MULTBYD(a[BPOS(3, j)]);
+    aux[BPOS(2, j)] = MULTBYD(a[BPOS(0, j)]) ^ MULTBY9(a[BPOS(1, j)]) ^ MULTBYE(a[BPOS(2, j)]) ^ MULTBYB(a[BPOS(3, j)]);
+    aux[BPOS(3, j)] = MULTBYB(a[BPOS(0, j)]) ^ MULTBYD(a[BPOS(1, j)]) ^ MULTBY9(a[BPOS(2, j)]) ^ MULTBYE(a[BPOS(3, j)]);
   }
+
+  memcpy(a, aux, BLOCKSIZE);
 }
 
 void invRoundKey(const Block key, Block roundKey, uint8_t round) {

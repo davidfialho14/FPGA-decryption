@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <string.h>
 #include "block.h"
 #include "encryption.h"
 #include "decryption.h"
@@ -20,25 +21,23 @@ void shiftRows(Block a) {
   ROW(a, 3) = ROWROR(ROW(a, 3),24);
 }
 
+#define MULTBY2(x) ((x & 0x80) ? ((x) << 1) ^ 0x1B : ((x) << 1))
+
 void mixColumns(Block a) {
-  uint8_t aux[BLOCKLENGTH];
-  uint8_t doublea[BLOCKLENGTH];  // a multplicado por 2
-  uint8_t i, j;
-  uint8_t h;
+  Block auxBlock;
 
-  for(j = 0; j < BLOCKLENGTH; ++j) {
-    for(i = 0; i < BLOCKLENGTH; ++i) {
-      aux[i] = a[BPOS(i, j)];
-      h = (uint8_t)((int8_t)a[BPOS(i, j)] >> 7);
-      doublea[i] = a[BPOS(i, j)] << 1;
-      doublea[i] ^= 0x1B & h;
-    }
-
-    a[BPOS(0, j)] = doublea[0] ^ aux[3] ^ aux[2] ^ doublea[1] ^ aux[1];
-    a[BPOS(1, j)] = doublea[1] ^ aux[0] ^ aux[3] ^ doublea[2] ^ aux[2];
-    a[BPOS(2, j)] = doublea[2] ^ aux[1] ^ aux[0] ^ doublea[3] ^ aux[3];
-    a[BPOS(3, j)] = doublea[3] ^ aux[2] ^ aux[1] ^ doublea[0] ^ aux[0];
+  for(int j = 0; j < BLOCKLENGTH; ++j) {
+    auxBlock[BPOS(0, j)] = MULTBY2(a[BPOS(0, j)]) ^ MULTBY2(a[BPOS(1, j)]) ^
+                          a[BPOS(1, j)] ^ a[BPOS(2, j)] ^ a[BPOS(3, j)];
+    auxBlock[BPOS(1, j)] = a[BPOS(0, j)] ^ MULTBY2(a[BPOS(1, j)]) ^
+                          MULTBY2(a[BPOS(2, j)]) ^ a[BPOS(2, j)] ^ a[BPOS(3, j)];
+    auxBlock[BPOS(2, j)] = a[BPOS(0, j)] ^ a[BPOS(1, j)] ^ MULTBY2(a[BPOS(2, j)]) ^
+                          MULTBY2(a[BPOS(3, j)]) ^ a[BPOS(3, j)];
+    auxBlock[BPOS(3, j)] = MULTBY2(a[BPOS(0, j)]) ^ a[BPOS(0, j)] ^ a[BPOS(1, j)] ^
+                          a[BPOS(2, j)] ^ MULTBY2(a[BPOS(3, j)]);
   }
+
+  memcpy(a, auxBlock, BLOCKSIZE);
 }
 
 void roundKey(Block key, uint8_t round) {

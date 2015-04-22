@@ -20,3 +20,4 @@ aes
 /file_operations.h.autosave
 >>>>>>> dev
 *.enc.dec
+/tests/
