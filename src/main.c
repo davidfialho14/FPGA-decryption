@@ -4,6 +4,8 @@
 #include <string.h>
 #include <strings.h>
 
+#include "defines.h"
+
 #ifndef BOARD
 #include <unistd.h>
 #include <sys/types.h>

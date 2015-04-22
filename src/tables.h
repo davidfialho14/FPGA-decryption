@@ -1,6 +1,8 @@
 #ifndef TABLES_H
 #define TABLES_H
 
+#include "defines.h"
+
 #ifndef BOARD
 #include <stdint-gcc.h>
 #else
@@ -15,4 +17,3 @@ extern const uint8_t sbox[SBOXSIZE];
 extern const uint8_t invSbox[SBOXSIZE];
 
 #endif // TABLES_H
-
