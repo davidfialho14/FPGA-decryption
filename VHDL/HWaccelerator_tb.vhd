@@ -16,6 +16,7 @@ ARCHITECTURE behavior OF HWaccelerator_tb IS
     PORT(
          clk : IN  std_logic;
          Exists : IN  std_logic;
+			ctrl	: in 	STD_LOGIC;
          DataIn : IN  std_logic_vector(31 downto 0);
          FSL_read : OUT  std_logic;
          FSL_write : OUT  std_logic;
@@ -27,6 +28,7 @@ ARCHITECTURE behavior OF HWaccelerator_tb IS
    --Inputs
    signal clk : std_logic := '0';
    signal Exists : std_logic := '0';
+	signal ctrl : std_logic := '0';
    signal DataIn : std_logic_vector(31 downto 0) := (others => '0');
 
  	--Outputs
@@ -43,6 +45,7 @@ BEGIN
    uut: HWaccelerator PORT MAP (
           clk => clk,
           Exists => Exists,
+			 ctrl	=> ctrl,
           DataIn => DataIn,
           FSL_read => FSL_read,
           FSL_write => FSL_write,
@@ -63,7 +66,9 @@ BEGIN
    stim_proc: process
    begin
       -- hold reset state for 100 ns.
-      wait for clk_period*6;
+      Exists <= '0';
+		ctrl <= '0';
+		wait for clk_period*6;
       -- insert stimulus here
 
       Exists <= '1';
@@ -74,6 +79,7 @@ BEGIN
       DataIn <= X"F6309807";
 		wait for clk_period;
       DataIn <= X"A88DA234";
+		ctrl <= '1';
 		wait for clk_period;
       Exists <= '0';
 
