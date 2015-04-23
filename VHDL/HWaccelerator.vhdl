@@ -38,6 +38,7 @@ architecture Behavioral of HWaccelerator is
 
 begin
 
+FSL_M_Control <= '0';
 FSL_S_Read <= FSL_S_Exists; -- Reads as soon as it shows up
 
 -- The output FSL_Clk is the input FSL_Clk delayd by DelayAmmount cycles
