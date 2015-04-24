@@ -1,6 +1,7 @@
 #ifndef FILE_OPERATIONS_H
 #define FILE_OPERATIONS_H
 
+#include "defines.h"
 #include "block.h"
 
 #ifndef BOARD

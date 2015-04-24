@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <strings.h>
+
+#include "defines.h"
 
 #ifndef BOARD
 #include <unistd.h>
@@ -77,9 +78,6 @@ int main(int argc, char *argv[]) {
 	Block state;
 	bzero(state, sizeof(state));
 
-
-	puts("a executar...");
-
 	int i = 0;
 	while (readBlock(i, state)) {
 
@@ -102,12 +100,58 @@ int main(int argc, char *argv[]) {
 
 		i++;	// próximo bloco de 128 bits
 	}
-	puts("terminado!");
 
 #ifndef BOARD
 	close(inputFd);
 	close(outputFd);
 #endif
 
+	printf("%d\n", i);
+
 	return 0;
 }
+
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <stdint.h>
+//#include "fsl.h"
+//#include "block.h"
+//
+//const uint8_t initBlock[] =
+//{
+//  0x32, 0x88, 0x31, 0xe0,
+//  0x43, 0x5a, 0x31, 0x37,
+//  0xf6, 0x30, 0x98, 0x07,
+//  0xa8, 0x8d, 0xa2, 0x34
+//};
+//
+//uint8_t resBlock[] =
+//{
+//  0xFF, 0xFF, 0xFF, 0xFF,
+//  0xFF, 0xFF, 0xFF, 0xFF,
+//  0x00, 0x00, 0x00, 0x00,
+//  0xFF, 0xFF, 0xFF, 0xFF,
+//};
+//
+//int main() {
+//
+//	int i, aux = -1;
+//
+//	for(i = 0; i < 12; i += 4) {
+//		aux = *((int*) &(initBlock[i]));
+//		putfsl(aux, 0);
+//	}
+//
+//	aux = *((int*) &(initBlock[12]));
+//	cputfsl(aux, 0);
+//
+//	for(i = 0; i < 16; i += 4) {
+//		getfsl(aux, 0);
+//		printf("get: 0x%08X\n", aux);
+//		*((int*)&resBlock[i]) = aux;
+//	}
+//
+//	printBlock(resBlock);
+//
+//	return 0;
+//}

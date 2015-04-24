@@ -1,16 +1,14 @@
 #include <stdio.h>
-#include <string.h>
 #include "block.h"
 #include "tables.h"
 #include "decryption.h"
+#include "fsl.h"
 
-#define MULTBY2(x) ((x & 0x80) ? ((x) << 1) ^ 0x1B : ((x) << 1))
-#define MULTBY4(x) (MULTBY2(MULTBY2(x)))
-#define MULTBY8(x) (MULTBY2(MULTBY4(x)))
-#define MULTBYE(x) (MULTBY8(x) ^ MULTBY4(x) ^ MULTBY2(x))
-#define MULTBYB(x) (MULTBY8(x) ^ MULTBY2(x) ^ (x))
-#define MULTBYD(x) (MULTBY8(x) ^ MULTBY4(x) ^ (x))
-#define MULTBY9(x) (MULTBY8(x) ^ (x))
+// xtime is a macro that finds the product of {02} and the argument to xtime modulo {1b}
+#define xtime(x)   ((x<<1) ^ (((x>>7) & 1) * 0x1b))
+
+// Multiplty is a macro used to multiply numbers in the field GF(2^8)
+#define Multiply(x,y) (((y & 1) * x) ^ ((y>>1 & 1) * xtime(x)) ^ ((y>>2 & 1) * xtime(xtime(x))) ^ ((y>>3 & 1) * xtime(xtime(xtime(x)))) ^ ((y>>4 & 1) * xtime(xtime(xtime(xtime(x))))))
 
 void invSubBytes(Block a) {
   uint8_t i, j;
@@ -28,6 +26,23 @@ void invShiftRows(Block a) {
   ROW(a, 3) = ROWROL(ROW(a, 3),24);
 }
 
+#ifdef BOARD
+void invMixColumns(Block a) {
+	int i, aux = -1;
+	for(i = 0; i < 12; i += 4) {
+		aux = *((int*) &(a[i]));
+		putfsl(aux, 0);
+	}
+
+	aux = *((int*) &(a[12]));
+	cputfsl(aux, 0);
+
+	for(i = 0; i < 16; i += 4) {
+		getfsl(aux, 0);
+		*((int*)&a[i]) = aux;
+	}
+}
+#else
 void invMixColumns(Block a) {
   Block aux;
   for(int j = 0; j < BLOCKLENGTH; ++j) {
@@ -39,6 +54,7 @@ void invMixColumns(Block a) {
 
   memcpy(a, aux, BLOCKSIZE);
 }
+#endif
 
 void invRoundKey(const Block key, Block roundKey, uint8_t round) {
   uint8_t i;

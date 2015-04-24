@@ -1,5 +1,8 @@
+#include "defines.h"
+
+#ifndef BOARD
+
 #include <stdint.h>
-#include <string.h>
 #include "block.h"
 #include "encryption.h"
 #include "decryption.h"
@@ -98,3 +101,5 @@ void encrypt(Block a, Block key) {
   roundKey(key, n);
   addRoundKey(a, key);
 }
+
+#endif

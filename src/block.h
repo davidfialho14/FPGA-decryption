@@ -2,6 +2,7 @@
 #define BLOCK_H
 
 #include <stdint.h>
+#include "defines.h"
 
 #define BLOCKLENGTH 4
 #define BLOCKSIZE   16
