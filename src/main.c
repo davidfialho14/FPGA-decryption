@@ -12,6 +12,8 @@
 #include <fcntl.h>
 
 #include "encryption.h"
+#else
+#include "htimer.h"
 #endif
 
 #include "block.h"
@@ -66,7 +68,13 @@ int main(int argc, char *argv[]) {
 		puts("n√£o foi poss√≠vel criar ficheiro encriptado");
 		exit(-1);
 	}
+#else
+	if(init_timer(1) == XST_FAILURE) {
+		puts("erro na inicializaÁ„o do timer");
+		exit(-1);
+	}
 
+	start_timer(1);
 #endif
 
 	//chave secreta
@@ -104,9 +112,13 @@ int main(int argc, char *argv[]) {
 #ifndef BOARD
 	close(inputFd);
 	close(outputFd);
+#else
+	u32 Val0, Val1;
+	Val1 = get_timer64_val (&Val0);
+	printf("time: %f\n", conv2_cycles_to_msecs(Val1, Val0));
 #endif
 
-	printf("%d\n", i);
+	printf("processed blocks: %d\n", i);
 
 	return 0;
 }

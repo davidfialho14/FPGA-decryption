@@ -47,6 +47,9 @@ int readBlock(int blockPosition, Block block) {
     //obter tamanho do ficheiro
 	int aux = *((int*) SIZE_ADDR);
     blockCount = aux / BLOCKSIZE + (aux % BLOCKSIZE > 0);
+
+    printf("size: %d\n", aux);
+    printf("block count: %d\n", blockCount);
   }
 
   if(blockPosition >= 0 && blockPosition < blockCount) {
@@ -69,12 +72,6 @@ int writeBlock(int blockPosition, Block block) {
   if(blockPosition >= 0 && blockPosition < blockCount) {
     //escrever bloco
     memcpy((uint8_t*) (FILE_BASE_ADDR + blockPosition * BLOCKSIZE), (uint8_t*) block, BLOCKSIZE);
-
-    int i;
-    for(i = 0; i < BLOCKSIZE; i++) {
-    	putchar(block[i]);
-    }
-
     blockWritten = 1;
   }
 
