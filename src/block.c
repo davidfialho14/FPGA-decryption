@@ -31,9 +31,13 @@ void printBlock(Block block) {
 }
 
 void initKey(Block key) {
-  memcpy(key, defaultKey, BLOCKSIZE);
+  for(int i = 0; i < BLOCKSIZE; i++) {
+    key[i] = defaultKey[i];
+  }
 }
 
 void initState(Block state) {
-  memcpy(state, defaultState, BLOCKSIZE);
+  for(int i = 0; i < BLOCKSIZE; i++) {
+    state[i] = defaultState[i];
+  }
 }
