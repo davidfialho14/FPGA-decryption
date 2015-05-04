@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "block.h"
 #include "tables.h"
 #include "decryption.h"
@@ -28,7 +27,6 @@ void invShiftRows(Block a) {
   ROW(a, 3) = ROWROL(ROW(a, 3),24);
 }
 
-#ifdef BOARD
 void invMixColumns(Block a) {
 	int i, aux = -1;
 	for(i = 0; i < 12; i += 4) {
@@ -44,20 +42,6 @@ void invMixColumns(Block a) {
 		*((int*)&a[i]) = aux;
 	}
 }
-#else
-void invMixColumns(Block a) {
-  Block aux;
-  int j;
-  for( j = 0; j < BLOCKLENGTH; ++j) {
-    aux[BPOS(0, j)] = MULTBYE(a[BPOS(0, j)]) ^ MULTBYB(a[BPOS(1, j)]) ^ MULTBYD(a[BPOS(2, j)]) ^ MULTBY9(a[BPOS(3, j)]);
-    aux[BPOS(1, j)] = MULTBY9(a[BPOS(0, j)]) ^ MULTBYE(a[BPOS(1, j)]) ^ MULTBYB(a[BPOS(2, j)]) ^ MULTBYD(a[BPOS(3, j)]);
-    aux[BPOS(2, j)] = MULTBYD(a[BPOS(0, j)]) ^ MULTBY9(a[BPOS(1, j)]) ^ MULTBYE(a[BPOS(2, j)]) ^ MULTBYB(a[BPOS(3, j)]);
-    aux[BPOS(3, j)] = MULTBYB(a[BPOS(0, j)]) ^ MULTBYD(a[BPOS(1, j)]) ^ MULTBY9(a[BPOS(2, j)]) ^ MULTBYE(a[BPOS(3, j)]);
-  }
-
-  memcpy(a, aux, BLOCKSIZE);
-}
-#endif
 
 void invRoundKey(const Block key, Block roundKey, uint8_t round) {
   uint8_t i;
