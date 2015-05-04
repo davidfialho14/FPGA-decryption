@@ -1,13 +1,7 @@
 #ifndef TABLES_H
 #define TABLES_H
 
-#include "defines.h"
-
-#ifndef BOARD
-#include <stdint-gcc.h>
-#else
 #include <stdint.h>
-#endif
 
 #define RCONSIZE    256
 #define SBOXSIZE    256
