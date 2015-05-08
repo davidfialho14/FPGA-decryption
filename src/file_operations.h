@@ -3,6 +3,6 @@
 
 #include "block.h"
 
-int readBlock(int blockPosition, Block block);
+int readBlock(int blockPosition, uint8_t **block);
 
 #endif

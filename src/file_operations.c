@@ -7,13 +7,13 @@
 
 #define FILESIZE        *((int*) SIZE_ADDR)
 
-int readBlock(int blockPosition, Block block) {
+int readBlock(int blockPosition, uint8_t **block) {
 	int blockCount = FILESIZE / BLOCKSIZE + (FILESIZE % BLOCKSIZE > 0);
 
 	if(blockPosition >= blockCount) {
 		return 0;
 	}
 
-  block = (uint8_t*) (FILE_BASE_ADDR + blockPosition * BLOCKSIZE);
+  *block = (uint8_t*) (FILE_BASE_ADDR + blockPosition * BLOCKSIZE);
   return 1;
 }

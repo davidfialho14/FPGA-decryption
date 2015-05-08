@@ -147,7 +147,7 @@ SECTIONS
    *(.sdata.*)
    *(.gnu.linkonce.s.*)
    __sdata_end = .;
-} > microblaze_0_i_bram_ctrl_microblaze_0_d_bram_ctrl
+} > MCB_DDR2_S0_AXI_BASEADDR
 
 .sbss : {
    . = ALIGN(4);
@@ -157,7 +157,7 @@ SECTIONS
    *(.gnu.linkonce.sb.*)
    . = ALIGN(8);
    __sbss_end = .;
-} > microblaze_0_i_bram_ctrl_microblaze_0_d_bram_ctrl
+} > MCB_DDR2_S0_AXI_BASEADDR
 
 .tdata : {
    __tdata_start = .;
