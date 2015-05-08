@@ -31,13 +31,15 @@ void printBlock(Block block) {
 }
 
 void initKey(Block key) {
-  for(int i = 0; i < BLOCKSIZE; i++) {
+  int i;
+	for(i = 0; i < BLOCKSIZE; i++) {
     key[i] = defaultKey[i];
   }
 }
 
 void initState(Block state) {
-  for(int i = 0; i < BLOCKSIZE; i++) {
+  int i;
+	for(i = 0; i < BLOCKSIZE; i++) {
     state[i] = defaultState[i];
   }
 }

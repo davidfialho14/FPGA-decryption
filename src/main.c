@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "htimer.h"
 #include "block.h"
@@ -11,24 +12,26 @@ int main(int argc, char *argv[]) {
 	//iniciar o contador
 	if(init_timer(1) == XST_FAILURE) {
 		puts("erro na inicialização do timer");
-		exit(-1);
+		return 1;
 	}
 
 	//começar contagem
 	start_timer(1);
 
 	//chave secreta
-	char password[] = "password";
 	Block key;
 	initKey(key);
 
 	Block state;
 	int i = 0;
+	int j;
 	while (readBlock(i, state)) {
 		decrypt(state, key);
 
-		//reiniciar chave
-		initKey(key);
+		for(j = 0; j < BLOCKSIZE; j++) {
+			putchar(state[j]);
+		}
+
 		i++;	// próximo bloco de 128 bits
 	}
 
