@@ -1,0 +1,70 @@
+\section{Algoritmo}
+
+\paragraph{} Qualquer algoritmo de encriptação é composto por dois processos principais: a encriptação e a desencriptação. Neste projecto optou-se apenas por implementar o processo de desencriptação.
+
+\subsection{Encriptação}
+
+\paragraph{} O algoritmo de AES define duas identidades, a chave e o estado. A chave corresponde à palavra-chave utilizada para encriptar os dados e o estado corresponde a um bloco de n bytes dos dados a encriptar. São suportadas 3 versões diferentes: AES-128, AES-196 e AES-256. Cada uma destas versões difere no comprimento máximo da chave e do estado e no número de iterações do algoritmo realizadas sobre cada estado. Optou-se por implementar apenas a versão AES-128 que limita o comprimento da chave e de cada estado a 128 bits (16 bytes).
+
+\paragraph{} No arranque do algoritmo os dados são divididos em blocos de 16 bytes e sobre cada um destes blocos são feitas várias iterações de um conjunto de 4 operações. 
+
+\begin{enumerate}
+\item \textit{AddRoundKey} - cada um dos 16 bytes do estado é somado com o bloco da sub-chave, correspondente é iteração. A soma é feita apenas com uma operação de XOR;
+\item \textit{SubBytes} - cada byte é substituído por outro de acordo com uma tabela predefinida;
+\item \textit{ShiftRows} - é feito um shift cíclico de dos bytes de cada linha do estado. O número de shifts feitos por cada linha depende do seu índice;
+\item \textit{MixColumns} - é feita uma operação matricial sobre o bloco do estado após ter sido feita uma recombinação dos bytes do bloco;
+\end{enumerate}
+
+\paragraph{} Além das operações feitas sobre cada estado é feita uma operação sobre a chave que gera várias sub-chaves, uma para cada iteração do algoritmo:
+
+\begin{itemize}
+\item \textit{KeyExpansion} - são derivadas 10 sub-chaves (round keys) a partir da chave de encriptação, uma para cada iteração do algoritmo.
+\end{itemize}
+
+No caso da versão AES-128 são feitas 10 iterações do algoritmo sobre cada estado e chave.
+
+\subsubsection{Pseudo Código}
+
+\begin{algorithmic}
+
+\STATE $KeyExpansions()$
+\STATE $AddRoundKey()$
+
+\FOR {$i = 0; i < 9; i++$}
+    \STATE $SubBytes()$
+    \STATE $ShiftRows()$
+    \STATE $MixColumns()$
+    \STATE $AddRoundKey()$
+\ENDFOR
+
+\STATE $SubBytes()$
+\STATE $ShiftRows()$
+\STATE $AddRoundKey()$
+
+\end{algorithmic}
+
+\subsection{Desencriptação}
+
+\paragraph{} No caso do algoritmo AES os dois passos, de encriptação e desencriptação, são relativamente idênticos, sendo que o processo de desencriptação é composto apenas pela inversão das operações executadas no processo de encriptação e a inversão da ordem das mesmas.
+
+\subsubsection{Pseudo Código}
+
+\begin{algorithmic}
+
+\STATE $KeyExpansions()$
+\STATE $AddRoundKey()$
+
+\FOR {$i = 0; i < 9; i++$}
+    \STATE $InvShiftRows()$
+    \STATE $InvSubBytes()$
+    \STATE $AddRoundKey()$
+    \STATE $InvMixColumns()$
+\ENDFOR
+
+\STATE $InvShiftRows()$
+\STATE $InvSubBytes()$
+\STATE $AddRoundKey()$
+
+\end{algorithmic}
+
+

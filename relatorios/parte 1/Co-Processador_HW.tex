@@ -1,0 +1,87 @@
+\section{Co-Processador HW}
+
+\paragraph{} Para acelerar a execução do programa começou-se por fazer profiling do programa num sistema x86 usando o a ferramenta textit{gprof}. Apesar de o \textit{ISA} e arquitectura usados para \textit{profiling} serem diferentes do MicroBlaze considerou-se que os resultados seriam na mesma representativos, uma vez que o programa é muito mais dependente da \textit{performance} de manipulação de memória do que de cálculos. 
+
+Foram feitos testes com ficheiros de diferentes dimensões e como previsto todos apontaram para a operação \textit{Inverse Mix Columns}, que consumia cerca de 80\% do tempo de execução por ser relativamente cara e também das operações mais usadas.
+A operação consiste numa multiplicação matricial no espaço GF\{$2^{8}$\}, entre a matriz de entrada e uma matriz constante, que pode ser \textit{hardcoded} no algoritmo.
+Concluiu-se que tanto pelo tempo de execução como pela quantidade de paralelização possível o acelerador iria executar esta operação.
+
+\subsection{Características e limitações do problema e do sistema}
+
+\paragraph{} A operação \textit{Inverse Mix Columns} é executada sobre matrizes quadradas de 16 entradas, cada entrada com 1 \textit{byte}, ou seja, matrizes de 16 \textit{bytes} ou 256 \textit{bits}. O MicroBlaze é um processador de 32 \textit{bits}, assim como o barramento de dados do \textit{FSL}. Desta forma, é possível enviar uma linha da matriz em cada operação de escrita \textit{FSL}, mas não a matriz inteira.
+
+São portanto necessárias 4 escritas e 4 leituras \textit{FSL} (o resultado da operação é uma matriz com as mesmas dimensões) para obter o resultado da operação do Co-Processador.
+
+\subsection{Descrição geral da Co-Processador HW}
+\paragraph{} Para fazer a operação é necessário ter toda a matriz, uma vez que esta é transferida linha a linha (é assim que está armazenada em memória) mas os cálculos são feitos coluna a coluna, o que obriga a esperar pela última linha para completar a 1ª coluna. Como mencionado antes, a matriz tem 4 linhas que correspondem a 4 transferências por \textit{FSL}, que são guardadas em 4 registos de 8 \textit{bits} ligados em série.
+
+Entre estes 4 registos de entrada e o \textit{Hardware} de computação é feita uma reorganização da matriz (por reorganização dos fios) para passar de 4 \textit{bus} de linhas para 4 \textit{bus} de colunas.
+
+O \textit{Hardware} de computação é composto por 4 blocos lógicos iguais, um para cada coluna, que são explicados em mais detalhe na secção seguinte. Tem como \textit{input} as 4 colunas da matriz e \textit{output} as 4 colunas da matriz resultante. Devido à elevada paralelização é possível fazer o cálculo em apenas um ciclo com frequências na ordem dos 200MHz.
+
+Para o andar de saída é feita a conversão de colunas para linhas que são armazenadas em 4 registos de 8 \textit{bits}. É usado um \textit{mux} para escolher qual a linha que é escrita no barramento de dados \textit{FSL}. 
+
+A selecção é controlada por um caminho de atraso que permite saber há quantos ciclos foi recebida a última linha (sinalizada pelo bit de controlo). Com base na posição do bit de controlo com valor 1 no caminho de atraso é feito o cálculo da linha de escrita que deve estar no barramento de dados.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{./CP-geral}~\\[1cm]
+    \caption{Esquema geral do Co-Processador}
+    \label{fig:CP-G}
+\end{figure}
+
+\subsection{\textit{Hardware} de computação}
+\paragraph{} A computação é executada num ciclo por 4 blocos semelhantes de lógica assíncrona, cada um calcula uma coluna da matriz resultado, $Y$. 
+
+A matriz $Y$ é calculada pela seguinte expressão: $A \times B = Y$
+
+$\times$ é uma multiplicação no espaço GF\{$2^{8}$\}, $B$ é a matriz de entrada e $A$ é uma matriz constante: 
+
+\[A = \left| \begin{array}{cccc}
+0E & 0B & 0D & 09 \\
+09 & 0E & 0B & 0D \\
+0D & 09 & 0E & 0B \\
+0B & 0D & 09 & 0E \end{array} \right|\]
+\center (valores em base hexadecimal)
+
+\flushleft Usando a seguinte organização para as matrizes:
+
+\[\left| \begin{array}{cccc}
+0 & 4 & 8 & 12 \\
+1 & 5 & 9 & 13 \\
+2 & 6 & 10 & 14 \\
+3 & 7 & 11 & 15 \end{array} \right|\]
+
+O cálculo de cada entrada da matriz $Y$ é dado pela expressão:
+
+\center $y_i = \sum\limits_{k=0}^3 a_{i+4k} \times b_{i+k}$
+
+\flushleft É possível decompor as multiplicações em multiplicações por 2 e operações $\oplus$ ($xor$, são equivalentes a somas no espaço GF\{$2^{8}$\}):
+
+\[ \begin{array}{lcr}
+\mbox{$09 \times b_i = (((b_i \times 2) \times 2) \times 2) \oplus b_i$} \\ 
+\mbox{$0B \times b_i = ((((b_i \times 2) \times 2) \oplus b_i) \times 2) \oplus b_i$} \\
+\mbox{$0D \times b_i = ((((b_i \times 2) \oplus b_i) \times 2) \times 2) \oplus b_i$} \\
+\mbox{$0E \times b_i = ((((b_i \times 2) \oplus b_i) \times 2) \oplus b_i) \times 2$} \end{array}\]
+
+Finalmente, uma multiplicação por 2 no espaço GF\{$2^{8}$\}) é dada por:
+
+\[ \begin{array}{lcr}
+\mbox{with $b_i$(7) select:} \\
+\mbox{\phantom{hello} $b_i \times 2$ \textless = $b_i$\textless\textless 1 when '0',} \\
+\mbox{\phantom{hello} $b_i \times 2$ \textless = $b_i$\textless\textless 1 $xor$ 0x1B when '1'}
+\end{array}\]
+
+O Co-processador foi desenhado de forma a aproveitar o paralelismo possível da operação:
+
+\begin{enumerate}
+\item O cálculo da matriz é feito por 4 blocos iguais que calculam uma coluna $k$, cada
+\item O cálculo de cada coluna é feito usando 4 blocos que calculam $y_{0+4k}$, $y_{1+4k}$, $y_{2+4k}$ e $y_{3+4k}$, implementando cada um a expressão dada para $y_i$ para a sua linha respectiva (Para calcular $y_{i+4k}$ é possível usar o mesmo bloco para $i's$ iguais) 
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{./CP-Logica}~\\[1cm]
+    \caption{Interior do Co-processador}
+    \label{fig:CP-L}
+\end{figure}

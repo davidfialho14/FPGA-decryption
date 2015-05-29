@@ -1,0 +1,10 @@
+\section{Resultados e Conclusão}
+
+\paragraph{} Depois do Co-Processador estar implementado e incorporado no sistema foram feitos vários testes de performance para comparar a implementação puramente por \textit{Software} e a implementação com o Co-Processador \textit{Hardware}.
+Foi observado um speedup de aproximadamente 4.5 quando utilizado o Co-Processador, o que é um melhoramento muito significativo, mesmo com a \textit{bottleneck} da partilha dos dados entre o CPU e o Co-processador.
+
+\paragraph{} É porém de notar a complexidade associada ao desenho e implementação deste tipo de hardware, assim como as várias limitações associadas, o que não torna rentável o seu desenvolvimento para todas as aplicações. 
+
+\paragraph{} Foi notado também que no sistema usado (uma placa de desenvolvimento com uma FPGA Spartan 6), mesmo com o \textit{Hardware} dedicado, não foi possível atingir a performance de um computador portátil moderno, devido às características do dispositivo. É mais uma razão para se considerar muito bem as vantagens e desvantagens do design deste tipo de sistema e as necessidades do problema a resolver.
+
+\paragraph{} De uma forma geral, no entanto, o melhor desempenho possível é normalmente atingido com a implementação de \textit{Hardware} dedicado, permitindo paralelismo muito mais rápido, intuitivo e eficiente. Por outro lado este tipo de sistemas podem ser muito dispendiosos e só se recorre a eles caso as exigências de performance o obriguem e seja vantajoso financeiramente.

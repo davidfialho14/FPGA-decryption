@@ -1,0 +1,30 @@
+\section{MicroBlaze e Software}
+
+% rascunho ainda
+
+\paragraph{} O microblaze é um processador \textit{soft core} de uso geral optimizado para implementações com as FPGA da Xilinx.
+
+\paragraph{} O microblaze é composto por duas memórias de cache, com uma latência de um ciclo de relógio do microblaze,  utilizadas para acelerar o acesso aos dados da memória externa. Existe uma cache utilizada para as instruções do programa e outra para os dados.
+
+\paragraph{} Ambas as caches podem ser configuradas para ter uma capacidade de 64 bytes até 64 KB. Para este projecto ambas as caches foram configuradas com uma capacidade de 8 KB.
+
+\paragraph{} A inclusão das caches permite reduzir o número de acessos à memória externa se for explorado o princípio de localidade de dados e instruções, uma vez que estas mantém registo dos valores das posições de memória acedidas mais recentemente.
+
+\paragraph{} Para além das caches, este processador pode ser ligado a 3 classes de memórias distintas:
+\begin{itemize}
+\item memória local: ligada pelo Local Memory Bus
+\item memória interna: ligada pelo barramento AXI ou
+AXI-Lite
+\item memória externa: ligada pelo barramento AXI e é controlada pelo Memory Controller Block (MCB)
+\end{itemize}
+
+\paragraph{} A memória externa no caso da placa Atlys tem um capacidade de 128MB e é de todas a que apresenta um tempo de acesso mais longo. Por esta razão esta é ligada ao microblaze através das caches de instruções e de dados. Embora esta seja a memória mais lenta tem a vantagem de ser aquela com maior capacidade.
+
+\paragraph{} A memória local tal como as caches faz parte do mesmo chip que o microblaze, o que significa que permite um acesso muito rápido aos dados. Tem o senão de ter uma capacidade muito reduzida de apenas 16KB.
+
+\subsection{Detalhes de Implementação}
+
+\paragraph{} De forma a aumentar a performance da implementação tentou-se reduzir o código da aplicação o máximo possível, evitando o uso de bibliotecas complexas, mesmo assim não possível reduzir o tamanho do programa o suficiente para que o programa inteiro coubesse na memória local. Sendo assim o programa é corrido a partir da memória externa com o auxílio da cache de instruções.
+
+\paragraph{} No caso do algoritmo implementado são acedidas algumas tabelas estáticas que ocupam um total de 768 bytes. Dada esta particularidade a aplicação optou-se por colocar todas as variáveis estáticas na memória local, uma vez que esta não estava a ser utilizada. Embora a sua frequente utilização sugerisse que estariam disponíveis a maior parte do tempo em cache, tal verificou-se não ser bem verdade uma vez que houve um aumento de performance após esta alteração na implementação. Esta situação pode ter ocorrido porque os valores das tabelas em cache estavam a ser substituídos por outros valores que eram mapeados para a mesma posição de cache durante o decorrer do processamento.
+
