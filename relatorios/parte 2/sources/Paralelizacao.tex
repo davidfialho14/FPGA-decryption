@@ -1,0 +1,15 @@
+\section{Arquitectura de Paralelização}
+
+\subsection{Divisão de Trabalho}
+\paragraph{}
+O algoritmo para desencriptar \textit{AES} (pode ser consultado no relatório da parte 1) não tem dependências entre cada bloco de 16 \textit{bytes}, pelo que a divisão de trabalho entre os vários processadores é muito simples: Cada processador fica encarregue de aproximadamente $N/P$ blocos, em que N é o número de blocos e P o número de processadores usados. De forma mais formal, identificando cada bloco com um número inteiro $i \in [0,N[$ e cada processador com um número inteiro $p \in [0,P[$, o processador \textit{p} fica encarregue de todos os blocos para os quais $i \mod P  = p$.
+
+Um dos processadores é considerado o \textit{master} e está encarregue, para além de fazer a sua parte da computação, de transmitir os resultados para o utilizador, sinalizar os outros processadores para iniciarem a computação e de gerir o \textit{timer} de execução, que é usado para medir a performance do sistema
+
+
+\subsection{Sincronização}
+\paragraph{}
+Como já referido, não há dependências entre blocos de 16 \textit{bytes} do ficheiro, pelo que a sincronização necessária é mínima: basta a existência de uma forma de o \textit{master} confirmar que todos os processadores chegaram ao fim de execução, para que o sistema consiga saber quando a computação está completa. 
+É também usada uma barreira antes de começar a computação mas apenas devido ao uso do \textit{timer}, não é necessária para a correcta execução do algoritmo.
+
+A sinalização ao \textit{master} é feita da seguinte forma: cada processador tem uma entrada na memória partilhada que é inicializada com um determinado valor. Quando o processador termina a computação escreve um valor diferente nessa entrada de memória, sinalizando que terminou. O \textit{master}, chegando ao fim da sua carga de trabalho, monitoriza estas posições de memória até confirmar que todos terminaram, altura em que o sistema dá como completa a computação, termina a contagem de tempo e transmite o resultado para o utilizador.

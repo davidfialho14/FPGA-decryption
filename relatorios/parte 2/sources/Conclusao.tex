@@ -1,0 +1,13 @@
+\section{Conclusão}
+Ao passar a usar as instruções para a memória interna a \textit{performance} melhorou em uma ordem de magnitude. Tal só poderia ser atingido através de paralelismo se fossem usados pelo menos 10 cores, pelo que a memória usada para diferentes tarefas no sistema é dos factores mais importantes quando se quer melhorar o tempo de execução.
+
+No entanto, depois de optimizar este e outros factores no sistema \textit{single-core} (por exemplo a criação de aceleradores por \textit{hardware}, como na parte 1), pode ainda haver muito desempenho a atingir com a utilização de múltiplos \textit{cores}, sendo este o foco da parte 2 do trabalho.
+
+No caso do algoritmo de desencriptação \textit{AES} a distribuição de tarefas e sincronização é muito simples, pelo que a maior parte do trabalho é no design do \textit{hardware}. De notar também que o sistema tem complexidade $O(n)$ para qualquer número de processadores.
+
+Como o algoritmo é altamente paralelizável, quase todas as limitações ao \textit{speedup} são de \textit{hardware} e, consequentemente, difíceis de resolver sem mudar de sistema. Como mencionado nas secções anteriores, as maiores complicações no sistema usado são a àrea disponível na FPGA (especificamente a quantidade de LUT's) e o overhead no acesso ao bus AXI-FULL da memória externa quando é usado um número relativamente elevado de processadores. 
+
+Uma melhor utilização das LUT's, embora possível, exige muito tempo de design e tem retornos muito reduzidos (talvez seja possível incluir mais um ou dois processadores), pelo que a atenção deve estar na gestão do bus AXI-FULL. No caso do algoritmo usado seria possível dividir os dados de entrada pelos vários P processadores, tendo cada um a sua própria memória de dados (com uma dimensão P vezes menor que a memória externa usada neste trabalho). Desta forma o overhead de arbitragem do acesso à memória (o principal limitador de performance neste trabalho) iria ser praticamente nulo, permitindo que o \textit{speedup} continuasse a ser proporcional ao número de processadores. Este método tem no entanto a desvantagem de tornar mais complexa a apresentação dos resultados mas não é um problema difícil de resolver.
+
+A implementação de multi-processadores em FPGA's é portanto bastante útil, uma vez que é uma forma de melhorar \textit{performance} relativamente simples (dependendo do algoritmo). Sendo possível combinar paralelismo com outras soluções, como a utilização de \textit{hardware} dedicado, as desvantagens são reduzidas e é portanto uma solução fácil de recomendar.
+%Boa escalabilidade e tal, não sei o que mais dizer
